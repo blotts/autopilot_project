@@ -7,10 +7,10 @@ class BaselineAttitudeHoldController(BaseController):
     def __init__(self, name='baseline_attitude_hold'):
         super().__init__(name=name)
 
-        # gains
-        self.k_theta = 0.10
-        self.k_q = 0.05
-        self.k_phi = 0.08
+        # textbook baseline gains
+        self.k_theta = 4.0
+        self.k_q = 2.5
+        self.k_phi = 5.0
 
         # limits
         self.max_elevator = 1.0

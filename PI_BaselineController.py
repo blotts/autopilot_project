@@ -15,6 +15,7 @@ class PythonInterface:
         self.xplane = None
         self.command = None
         self.flight_loop = None
+        self.debug_print = False
 
         try:
             self.controller = BaselineAttitudeHoldController()
@@ -36,6 +37,12 @@ class PythonInterface:
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):
+        try:
+            if self.xplane is not None:
+                self.xplane.write_control_zero()
+        except Exception as exc:
+            print(f'[BaselineController] Stop cleanup warning: {exc}')
+
         if self.flight_loop is not None:
             xp.destroyFlightLoop(self.flight_loop)
             self.flight_loop = None
@@ -43,8 +50,8 @@ class PythonInterface:
         print('[BaselineController] Plugin stopped.')
 
     def XPluginEnable(self):
-        if self.flight_loop is None:
-            print('[BaselineController] Cannot enable: no flight loop.')
+        if self.flight_loop is None or self.controller is None or self.xplane is None:
+            print('[BaselineController] Cannot enable: plugin not fully initialized.')
             return 0
 
         xp.scheduleFlightLoop(self.flight_loop, -1.0, 1)
@@ -52,6 +59,12 @@ class PythonInterface:
         return 1
 
     def XPluginDisable(self):
+        try:
+            if self.xplane is not None:
+                self.xplane.write_control_zero()
+        except Exception as exc:
+            print(f'[BaselineController] Disable cleanup warning: {exc}')
+
         print('[BaselineController] Plugin disabled.')
 
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
@@ -65,7 +78,8 @@ class PythonInterface:
             output = self.controller.update(state, self.command, dt)
             self.xplane.write_control(output)
 
-            print(f'[BaselineController] state={state} output={output}')
+            if self.debug_print:
+                print(f'[BaselineController] state={state} output={output}')
 
         except Exception as exc:
             print(f'[BaselineController] Flight loop error: {exc}')

@@ -43,3 +43,6 @@ class XPlaneInterface:
     def write_control(self, output: ControlOutput):
         xp.setDataf(self.yoke_pitch_ref, float(output.elevator))
         xp.setDataf(self.yoke_roll_ref, float(output.aileron))
+
+    def write_control_zero(self):
+        self.write_control(ControlOutput())

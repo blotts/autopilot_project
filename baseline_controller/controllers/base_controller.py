@@ -1,4 +1,4 @@
-from models.control_output import ControlOutput
+from baseline_controller.models.control_output import ControlOutput
 
 
 class BaseController:

@@ -1,6 +1,6 @@
-from controllers.base_controller import BaseController
-from models.control_output import ControlOutput
-from utils.helpers import clamp
+from baseline_controller.controllers.base_controller import BaseController
+from baseline_controller.models.control_output import ControlOutput
+from baseline_controller.utils.helpers import clamp
 
 
 class BaselineAttitudeHoldController(BaseController):

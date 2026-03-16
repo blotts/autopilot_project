@@ -6,15 +6,19 @@ from baseline_controller.models.control_output import ControlOutput
 
 class XPlaneInterface:
     def __init__(self):
-        # state datarefs
+        # State datarefs.
         self.theta_ref = xp.findDataRef('sim/flightmodel/position/theta')
         self.q_ref = xp.findDataRef('sim/flightmodel/position/Q')
         self.phi_ref = xp.findDataRef('sim/flightmodel/position/phi')
         self.p_ref = xp.findDataRef('sim/flightmodel/position/P')
 
-        # control input datarefs
-        self.yoke_pitch_ref = xp.findDataRef('sim/cockpit2/controls/yoke_pitch_ratio')
-        self.yoke_roll_ref = xp.findDataRef('sim/cockpit2/controls/yoke_roll_ratio')
+        # Writable joystick-control datarefs used when override is enabled.
+        self.yoke_pitch_ref = xp.findDataRef('sim/joystick/yoke_pitch_ratio')
+        self.yoke_roll_ref = xp.findDataRef('sim/joystick/yoke_roll_ratio')
+
+        # Axis-specific overrides so hardware input stops fighting the plugin.
+        self.override_pitch_ref = xp.findDataRef('sim/operation/override/override_joystick_pitch')
+        self.override_roll_ref = xp.findDataRef('sim/operation/override/override_joystick_roll')
 
         self._check_datarefs()
 
@@ -26,6 +30,8 @@ class XPlaneInterface:
             'p_ref': self.p_ref,
             'yoke_pitch_ref': self.yoke_pitch_ref,
             'yoke_roll_ref': self.yoke_roll_ref,
+            'override_pitch_ref': self.override_pitch_ref,
+            'override_roll_ref': self.override_roll_ref,
         }
 
         missing = [name for name, ref in required.items() if ref is None]
@@ -39,6 +45,11 @@ class XPlaneInterface:
             phi=xp.getDataf(self.phi_ref),
             p=xp.getDataf(self.p_ref),
         )
+
+    def set_control_override(self, enabled: bool):
+        value = 1 if enabled else 0
+        xp.setDatai(self.override_pitch_ref, value)
+        xp.setDatai(self.override_roll_ref, value)
 
     def write_control(self, output: ControlOutput):
         xp.setDataf(self.yoke_pitch_ref, float(output.elevator))

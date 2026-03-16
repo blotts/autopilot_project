@@ -21,11 +21,7 @@ class PythonInterface:
             self.controller = BaselineAttitudeHoldController()
             self.xplane = XPlaneInterface()
 
-            # fixed test command for first bring-up
-            self.command = Command(
-                theta_cmd=5.0,
-                phi_cmd=0.0,
-            )
+            self.command = Command()
 
             self.flight_loop = xp.createFlightLoop(self.flight_loop_callback)
 

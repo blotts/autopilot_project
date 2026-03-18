@@ -17,9 +17,9 @@ class PythonInterface:
         self.flight_loop = None
         self.debug_print = False
 
-        # Plugin logic state.
+        # Plugin logic state
         self.active = False
-        self.loop_interval_s = 0.05   # 20 Hz, intentionally slower/smoother
+        self.loop_interval_s = 0.05   # 20 Hz
 
         # X-Plane command refs for keybinding.
         self.toggle_command_ref = None
@@ -81,7 +81,6 @@ class PythonInterface:
         xp.registerCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
         xp.registerCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
 
-        # Do not schedule the controller loop yet. It will run only when active.
         xp.scheduleFlightLoop(self.flight_loop, 0.0, 1)
 
         print('[BaselineController] Plugin enabled. Bind one of these commands in X-Plane:')
@@ -131,9 +130,7 @@ class PythonInterface:
     def engage_controller(self):
         state = self.xplane.read_state()
 
-        # Capture the current aircraft attitude so there is no step jump when engaged.
-        self.command.theta_cmd = state.theta
-        self.command.phi_cmd = state.phi
+        self.command = Command()
 
         self.controller.reset()
         self.controller.enable()

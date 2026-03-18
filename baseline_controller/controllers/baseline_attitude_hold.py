@@ -6,16 +6,14 @@ class BaselineAttitudeHoldController(BaseController):
     def __init__(self, name='baseline_attitude_hold'):
         super().__init__(name=name)
 
-        # Softer gains for direct yoke-ratio control in X-Plane.
-        # The old textbook-style gains were far too aggressive once mapped
-        # straight into [-1, 1] joystick commands.
+        # Tested gains
         self.k_theta = 0.06
         self.k_q = 0.12
         self.k_phi = 0.05
 
-        # Keep the controller away from full throw unless really needed.
-        self.max_elevator = 0.35
-        self.max_aileron = 0.35
+        # Max inputs to the aircraft
+        self.max_elevator = 1.0
+        self.max_aileron = 1.0
 
         # Output smoothing / rate limiting to stop elevator chatter.
         self.output_alpha = 0.25          # low-pass blend factor
@@ -59,14 +57,15 @@ class BaselineAttitudeHoldController(BaseController):
 
         return output
 
+    # Textbook controllers
     def compute_elevator(self, state, command):
         pitch_error = command.theta_cmd - state.theta
-        elevator_cmd = self.k_theta * pitch_error - self.k_q * state.q
+        elevator_cmd = self.k_theta * pitch_error - self.k_q * state.q       # PD controller
         return clamp(elevator_cmd, -self.max_elevator, self.max_elevator)
 
     def compute_aileron(self, state, command):
         roll_error = command.phi_cmd - state.phi
-        aileron_cmd = self.k_phi * roll_error
+        aileron_cmd = self.k_phi * roll_error                                # P controller
         return clamp(aileron_cmd, -self.max_aileron, self.max_aileron)
 
     def _smooth_axis(self, target, previous, max_rate, dt):

@@ -6,17 +6,17 @@ from baseline_controller.models.control_output import ControlOutput
 
 class XPlaneInterface:
     def __init__(self):
-        # State datarefs.
+        # State datarefs
         self.theta_ref = xp.findDataRef('sim/flightmodel/position/theta')
         self.q_ref = xp.findDataRef('sim/flightmodel/position/Q')
         self.phi_ref = xp.findDataRef('sim/flightmodel/position/phi')
         self.p_ref = xp.findDataRef('sim/flightmodel/position/P')
 
-        # Writable joystick-control datarefs used when override is enabled.
+        # Writable joystick-control datarefs used when override is enabled
         self.yoke_pitch_ref = xp.findDataRef('sim/joystick/yoke_pitch_ratio')
         self.yoke_roll_ref = xp.findDataRef('sim/joystick/yoke_roll_ratio')
 
-        # Axis-specific overrides so hardware input stops fighting the plugin.
+        # Axis-specific overrides so hardware input stops fighting the plugin
         self.override_pitch_ref = xp.findDataRef('sim/operation/override/override_joystick_pitch')
         self.override_roll_ref = xp.findDataRef('sim/operation/override/override_joystick_roll')
 

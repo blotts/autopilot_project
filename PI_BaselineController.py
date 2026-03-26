@@ -2,7 +2,7 @@ from XPPython3 import xp
 
 from baseline_controller.controllers.baseline_attitude_hold import BaselineAttitudeHoldController
 from baseline_controller.interfaces.xplane_interface import XPlaneInterface
-from baseline_controller.models.command import Command
+from baseline_controller.models.models import Command
 
 
 class PythonInterface:

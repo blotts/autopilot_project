@@ -1,7 +1,6 @@
 from XPPython3 import xp
 
-from baseline_controller.models.state import AircraftState
-from baseline_controller.models.control_output import ControlOutput
+from baseline_controller.models.models import AircraftState, ControlOutput
 
 
 class XPlaneInterface:

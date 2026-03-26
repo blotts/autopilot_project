@@ -1,6 +1,7 @@
 from baseline_controller.controllers.base_controller import BaseController
-from baseline_controller.utils.helpers import clamp
 
+def clamp(value, lower, upper):
+    return max(lower, min(upper, value))
 
 class BaselineAttitudeHoldController(BaseController):
     def __init__(self, name='baseline_attitude_hold'):

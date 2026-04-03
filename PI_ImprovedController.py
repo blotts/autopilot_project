@@ -23,6 +23,7 @@ class PythonInterface:
         self.toggle_command_ref = None
         self.enable_command_ref = None
         self.disable_command_ref = None
+        self._handlers_registered = False
 
         try:
             self.controller = AdvancedStraightFlightController()
@@ -57,12 +58,14 @@ class PythonInterface:
         except Exception as exc:
             print(f'[AdvancedStraightFlight] Stop cleanup warning: {exc}')
 
-        if self.toggle_command_ref is not None:
-            xp.unregisterCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
-        if self.enable_command_ref is not None:
-            xp.unregisterCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
-        if self.disable_command_ref is not None:
-            xp.unregisterCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
+        if self._handlers_registered:
+            if self.toggle_command_ref is not None:
+                xp.unregisterCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
+            if self.enable_command_ref is not None:
+                xp.unregisterCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
+            if self.disable_command_ref is not None:
+                xp.unregisterCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
+            self._handlers_registered = False
 
         if self.flight_loop is not None:
             xp.destroyFlightLoop(self.flight_loop)
@@ -78,6 +81,7 @@ class PythonInterface:
         xp.registerCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
         xp.registerCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
         xp.registerCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
+        self._handlers_registered = True
 
         xp.scheduleFlightLoop(self.flight_loop, 0.0, 1)
 
@@ -93,12 +97,14 @@ class PythonInterface:
         except Exception as exc:
             print(f'[AdvancedStraightFlight] Disable cleanup warning: {exc}')
 
-        if self.toggle_command_ref is not None:
-            xp.unregisterCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
-        if self.enable_command_ref is not None:
-            xp.unregisterCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
-        if self.disable_command_ref is not None:
-            xp.unregisterCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
+        if self._handlers_registered:
+            if self.toggle_command_ref is not None:
+                xp.unregisterCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
+            if self.enable_command_ref is not None:
+                xp.unregisterCommandHandler(self.enable_command_ref, self.command_handler, 1, None)
+            if self.disable_command_ref is not None:
+                xp.unregisterCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
+            self._handlers_registered = False
 
         print('[AdvancedStraightFlight] Plugin disabled.')
 

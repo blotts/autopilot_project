@@ -1,8 +1,4 @@
-from baseline_controller.controllers.base_controller import BaseController
-
-
-def clamp(value, lower, upper):
-    return max(lower, min(upper, value))
+from baseline_controller.controllers.base_controller import BaseController, clamp
 
 
 class AdvancedStraightFlightController(BaseController):
@@ -224,8 +220,4 @@ class AdvancedStraightFlightController(BaseController):
         return previous + delta
 
     def _wrap_angle_deg(self, angle):
-        while angle > 180.0:
-            angle -= 360.0
-        while angle < -180.0:
-            angle += 360.0
-        return angle
+        return (angle + 180.0) % 360.0 - 180.0

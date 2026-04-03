@@ -15,9 +15,11 @@ class XPlaneInterface:
             'sim/cockpit/gyros/psi_ind_degm',
         ])
         self.r_ref = self._find_first(['sim/flightmodel/position/R'])
+        # NOTE: Only use the pilot altimeter (ft). The fallback
+        # sim/flightmodel/position/elevation is in metres and would silently
+        # corrupt all altitude-based control, so it is intentionally excluded.
         self.altitude_ref = self._find_first([
             'sim/cockpit2/gauges/indicators/altitude_ft_pilot',
-            'sim/flightmodel/position/elevation',
         ])
         self.vertical_speed_ref = self._find_first([
             'sim/cockpit2/gauges/indicators/vvi_fpm_pilot',

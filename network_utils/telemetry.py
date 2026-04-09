@@ -18,9 +18,7 @@ class TelemetryManager:
         except Exception as e:
             logging.warning(f"Failed to close telemetry socket:\n{e}")    
 
-    # maybe use flatbuffers or some actual schema. idk if
-    # xplane plugins actually support that
-    async def send_data(self, data: str):
+    def send_data(self, data: str):
         try:
             self.sock.sendall(data.encode('utf-8'))
         except:

@@ -1,15 +1,15 @@
 from XPPython3 import xp
 
-from baseline_controller.controllers.baseline_attitude_hold import BaselineAttitudeHoldController
+from baseline_controller.controllers.advanced_straight_flight_controller import AdvancedStraightFlightController
 from baseline_controller.interfaces.xplane_interface import XPlaneInterface
 from baseline_controller.models.models import Command
 
 
 class PythonInterface:
     def XPluginStart(self):
-        self.Name = 'Baseline Attitude Hold'
-        self.Sig = 'braden.baseline.attitudehold'
-        self.Desc = 'Baseline pitch/roll attitude-hold controller'
+        self.Name = 'Advanced Straight Flight Hold'
+        self.Sig = 'braden.advanced.straightflight'
+        self.Desc = 'Straight-and-level controller with heading, altitude, and airspeed hold'
 
         self.controller = None
         self.xplane = None
@@ -17,40 +17,38 @@ class PythonInterface:
         self.flight_loop = None
         self.debug_print = False
 
-        # Plugin logic state
         self.active = False
         self.loop_interval_s = 0.05   # 20 Hz
 
-        # X-Plane command refs for keybinding.
         self.toggle_command_ref = None
         self.enable_command_ref = None
         self.disable_command_ref = None
         self._handlers_registered = False
 
         try:
-            self.controller = BaselineAttitudeHoldController()
+            self.controller = AdvancedStraightFlightController()
             self.xplane = XPlaneInterface()
             self.command = Command()
 
             self.flight_loop = xp.createFlightLoop(self.flight_loop_callback)
 
             self.toggle_command_ref = xp.createCommand(
-                'braden/baseline_attitude_hold/toggle',
-                'Toggle the baseline attitude-hold controller on/off',
+                'braden/advanced_straight_flight/toggle',
+                'Toggle the advanced straight-flight controller on/off',
             )
             self.enable_command_ref = xp.createCommand(
-                'braden/baseline_attitude_hold/enable',
-                'Enable the baseline attitude-hold controller',
+                'braden/advanced_straight_flight/enable',
+                'Enable the advanced straight-flight controller',
             )
             self.disable_command_ref = xp.createCommand(
-                'braden/baseline_attitude_hold/disable',
-                'Disable the baseline attitude-hold controller',
+                'braden/advanced_straight_flight/disable',
+                'Disable the advanced straight-flight controller',
             )
 
-            print('[BaselineController] Plugin started successfully.')
+            print('[AdvancedStraightFlight] Plugin started successfully.')
 
         except Exception as exc:
-            print(f'[BaselineController] Startup failed: {exc}')
+            print(f'[AdvancedStraightFlight] Startup failed: {exc}')
 
         return self.Name, self.Sig, self.Desc
 
@@ -58,10 +56,8 @@ class PythonInterface:
         try:
             self.disengage_controller()
         except Exception as exc:
-            print(f'[BaselineController] Stop cleanup warning: {exc}')
+            print(f'[AdvancedStraightFlight] Stop cleanup warning: {exc}')
 
-        # Only unregister if XPluginDisable was not called first (defensive guard
-        # against double-unregistration, which can crash X-Plane).
         if self._handlers_registered:
             if self.toggle_command_ref is not None:
                 xp.unregisterCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
@@ -75,11 +71,11 @@ class PythonInterface:
             xp.destroyFlightLoop(self.flight_loop)
             self.flight_loop = None
 
-        print('[BaselineController] Plugin stopped.')
+        print('[AdvancedStraightFlight] Plugin stopped.')
 
     def XPluginEnable(self):
         if self.flight_loop is None or self.controller is None or self.xplane is None:
-            print('[BaselineController] Cannot enable: plugin not fully initialized.')
+            print('[AdvancedStraightFlight] Cannot enable: plugin not fully initialized.')
             return 0
 
         xp.registerCommandHandler(self.toggle_command_ref, self.command_handler, 1, None)
@@ -89,17 +85,17 @@ class PythonInterface:
 
         xp.scheduleFlightLoop(self.flight_loop, 0.0, 1)
 
-        print('[BaselineController] Plugin enabled. Bind one of these commands in X-Plane:')
-        print('  braden/baseline_attitude_hold/toggle')
-        print('  braden/baseline_attitude_hold/enable')
-        print('  braden/baseline_attitude_hold/disable')
+        print('[AdvancedStraightFlight] Plugin enabled. Bind one of these commands in X-Plane:')
+        print('  braden/advanced_straight_flight/toggle')
+        print('  braden/advanced_straight_flight/enable')
+        print('  braden/advanced_straight_flight/disable')
         return 1
 
     def XPluginDisable(self):
         try:
             self.disengage_controller()
         except Exception as exc:
-            print(f'[BaselineController] Disable cleanup warning: {exc}')
+            print(f'[AdvancedStraightFlight] Disable cleanup warning: {exc}')
 
         if self._handlers_registered:
             if self.toggle_command_ref is not None:
@@ -110,7 +106,7 @@ class PythonInterface:
                 xp.unregisterCommandHandler(self.disable_command_ref, self.command_handler, 1, None)
             self._handlers_registered = False
 
-        print('[BaselineController] Plugin disabled.')
+        print('[AdvancedStraightFlight] Plugin disabled.')
 
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
         pass
@@ -138,22 +134,29 @@ class PythonInterface:
     def engage_controller(self):
         state = self.xplane.read_state()
 
-        self.command = Command()
+        self.command = Command(
+            theta_cmd=state.theta,
+            phi_cmd=state.phi,
+            heading_deg_cmd=state.psi,
+            altitude_ft_cmd=state.altitude_ft,
+            airspeed_kts_cmd=state.airspeed_kts,
+        )
 
+        self.controller.trim_throttle = max(0.0, min(1.0, state.throttle))
         self.controller.reset()
         self.controller.enable()
         self.controller.initialize(state=state, command=self.command)
 
-        # Override pilot pitch/roll hardware so the joystick no longer fights the plugin.
         self.xplane.set_control_override(True)
-        self.xplane.write_control_zero()
+        self.xplane.write_control_zero(throttle=self.controller.trim_throttle)
 
         self.active = True
         xp.scheduleFlightLoop(self.flight_loop, -1.0, 1)
 
         print(
-            '[BaselineController] ACTIVE '
-            f'(theta_cmd={self.command.theta_cmd:.2f}, phi_cmd={self.command.phi_cmd:.2f})'
+            '[AdvancedStraightFlight] ACTIVE '
+            f'(hdg={self.command.heading_deg_cmd:.1f}, alt={self.command.altitude_ft_cmd:.1f} ft, '
+            f'ias={self.command.airspeed_kts_cmd:.1f} kt)'
         )
 
     def disengage_controller(self):
@@ -170,7 +173,7 @@ class PythonInterface:
             self.xplane.write_control_zero()
             self.xplane.set_control_override(False)
 
-        print('[BaselineController] INACTIVE')
+        print('[AdvancedStraightFlight] INACTIVE')
 
     def flight_loop_callback(self, since_last_call, elapsed_time, counter, refcon):
         if not self.active:
@@ -178,16 +181,15 @@ class PythonInterface:
 
         try:
             dt = since_last_call if since_last_call > 0.0 else self.loop_interval_s
-
             state = self.xplane.read_state()
             output = self.controller.update(state, self.command, dt)
             self.xplane.write_control(output)
 
             if self.debug_print:
-                print(f'[BaselineController] state={state} output={output}')
+                print(f'[AdvancedStraightFlight] state={state} output={output}')
 
         except Exception as exc:
-            print(f'[BaselineController] Flight loop error: {exc}')
+            print(f'[AdvancedStraightFlight] Flight loop error: {exc}')
             self.disengage_controller()
             return 0.0
 

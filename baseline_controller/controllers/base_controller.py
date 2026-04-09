@@ -1,6 +1,10 @@
 from baseline_controller.models.models import ControlOutput
 
 
+def clamp(value, lower, upper):
+    return max(lower, min(upper, value))
+
+
 class BaseController:
     def __init__(self, name='controller'):
         self.name = name

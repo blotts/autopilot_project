@@ -27,9 +27,9 @@ class AdvancedStraightFlightController(BaseController):
         # Outer-loop gains
         # -----------------------------
         # Altitude -> pitch command
-        self.k_alt = 0.0035           # deg pitch per ft altitude error
+        self.k_alt = 0.0045           # deg pitch per ft altitude error
         self.k_vs = 0.0022            # deg pitch per fpm vertical speed
-        self.k_i_alt = 0.00045
+        self.k_i_alt = 0.0165
 
         # Heading -> bank command
         self.k_psi = 1.35             # deg bank per deg heading error
@@ -38,9 +38,9 @@ class AdvancedStraightFlightController(BaseController):
 
         # Airspeed -> throttle
         self.trim_throttle = 0.55
-        self.k_v = 0.018              # throttle per knot error
-        self.k_i_v = 0.0035
-        self.k_theta_ff = 0.010       # extra throttle when commanding nose-up
+        self.k_v = 0.054             # throttle per knot error
+        self.k_i_v = 0.00105
+        self.k_theta_ff = 0.030     # extra throttle when commanding nose-up
 
         # -----------------------------
         # Inner-loop gains
@@ -56,8 +56,8 @@ class AdvancedStraightFlightController(BaseController):
         self.k_i_phi = 0.012
 
         # Rudder damping / slip suppression
-        self.k_beta = 0.060
-        self.k_r_rudder = 0.050
+        self.k_beta = 0.075
+        self.k_r_rudder = 0.065
 
         # -----------------------------
         # Command limits

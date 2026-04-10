@@ -1,0 +1,1 @@
+To start the telemetry receiver, run `uv run python udp_plot.py`. By default it will listen on localhost port 8000. You may test it with the `test_sender.py` file in this same directory by running the two programs concurrently.

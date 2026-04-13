@@ -1,6 +1,6 @@
 # Aircraft Autopilot Project
 
-This project was done for the class ASE 370C: Feedback Control Systems in the Spring 2026 semester.
+This project was done for the class ASE 370C: Feedback Control Systems in the Spring 2026 semester. A cascaded flight control system for X-Plane achieving robust straight-and-level flight under disturbance.
 
 ## Summary
 
